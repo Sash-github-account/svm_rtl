@@ -9,6 +9,9 @@ module svm_comp_core(
 		     input logic 		   arr_wghtbar_data,
 		     input logic 		   prog_accum_inputs,
 		     input logic 		   clear_weights_n_data,
+		     input logic 		   accum_comp_en,
+		     input logic [31:0] 	   cur_accum_data,
+		     input logic [31:0] 	   accum_add_data,
 		     output logic [DATA_WIDTH-1:0] data_out,
 		     output logic 		   data_out_vld,
 		     output logic 		   weights_progd,
@@ -82,6 +85,39 @@ module svm_comp_core(
    logic [DATA_WIDTH-1:0] 			   data_vec_regs_29; 
    logic [DATA_WIDTH-1:0] 			   data_vec_regs_30;
    logic [DATA_WIDTH-1:0] 			   data_vec_regs_31;
+
+   logic [DATA_WIDTH-1:0] 			   data_out_0;
+   logic [DATA_WIDTH-1:0] 			   data_out_1;
+   logic [DATA_WIDTH-1:0] 			   data_out_2;
+   logic [DATA_WIDTH-1:0] 			   data_out_3;
+   logic [DATA_WIDTH-1:0] 			   data_out_4;
+   logic [DATA_WIDTH-1:0] 			   data_out_5;
+   logic [DATA_WIDTH-1:0] 			   data_out_6;
+   logic [DATA_WIDTH-1:0] 			   data_out_7;
+   logic [DATA_WIDTH-1:0] 			   data_out_8;
+   logic [DATA_WIDTH-1:0] 			   data_out_9;
+   logic [DATA_WIDTH-1:0] 			   data_out_10;
+   logic [DATA_WIDTH-1:0] 			   data_out_11;
+   logic [DATA_WIDTH-1:0] 			   data_out_12;
+   logic [DATA_WIDTH-1:0] 			   data_out_13;
+   logic [DATA_WIDTH-1:0] 			   data_out_14;
+   logic [DATA_WIDTH-1:0] 			   data_out_15;
+   logic [DATA_WIDTH-1:0] 			   data_out_16;
+   logic [DATA_WIDTH-1:0] 			   data_out_17;
+   logic [DATA_WIDTH-1:0] 			   data_out_18;
+   logic [DATA_WIDTH-1:0] 			   data_out_19;
+   logic [DATA_WIDTH-1:0] 			   data_out_20;
+   logic [DATA_WIDTH-1:0] 			   data_out_21;
+   logic [DATA_WIDTH-1:0] 			   data_out_22;
+   logic [DATA_WIDTH-1:0] 			   data_out_23;
+   logic [DATA_WIDTH-1:0] 			   data_out_24;
+   logic [DATA_WIDTH-1:0] 			   data_out_25;
+   logic [DATA_WIDTH-1:0] 			   data_out_26;
+   logic [DATA_WIDTH-1:0] 			   data_out_27;
+   logic [DATA_WIDTH-1:0] 			   data_out_28;
+   logic [DATA_WIDTH-1:0] 			   data_out_29;
+   logic [DATA_WIDTH-1:0] 			   data_out_30;
+   logic [DATA_WIDTH-1:0] 			   data_out_31;	
    
    logic [DATA_WIDTH-1:0] 			   data_mux_out_0;
    logic [DATA_WIDTH-1:0] 			   data_mux_out_1;
@@ -341,7 +377,10 @@ module svm_comp_core(
 			   .clk(clk),
 			   .rst_n(rst_n),
 			   .comp_en(data_out_vec_vld),
-			   .data_in_op_sel(1'b0), 
+			   .data_in_op_sel(1'b0),
+			   .accum_comp_en (accum_comp_en), 
+			   .cur_accum_data(cur_accum_data),
+			   .accum_add_data(accum_add_data),
 			   .data_0 (data_mux_out_0),
 			   .data_1 (data_mux_out_1), 
 			   .data_2 (data_mux_out_2),
@@ -374,12 +413,12 @@ module svm_comp_core(
 			   .data_29(data_mux_out_29), 
 			   .data_30(data_mux_out_30),
 			   .data_31(data_mux_out_31),
-			   .data_out(data_out_o1),
+			   .data_out(data_out),
 			   .data_out_vld(data_out_vld)
 			   ) ;
    
    logic [31:0] 				   data_out_o1;
-   logic [31:0] 				   data_out_o2;
+/*   logic [31:0] 				   data_out_o2;
    logic [31:0] 				   data_out_o3;	
    assign data_out = data_out_o1 & data_out_o2 & data_out_o3;
    
@@ -399,6 +438,6 @@ module svm_comp_core(
 			   .rdreq(data_out_vld),
 			   .wrreq(data_out_vec_vld),
 			   .q(data_out_o3)
-			   );
+			   );*/
    
 endmodule

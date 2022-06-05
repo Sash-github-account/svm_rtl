@@ -2,7 +2,10 @@ module fp_vec_add(
 						input logic 		      clk,
 						input logic 		      rst_n,
 						input logic 		      comp_en,
-						input logic 		      data_in_op_sel, 
+						input logic 		      data_in_op_sel,
+		  				input logic 		      accum_comp_en,
+						input logic [31:0] 	      cur_accum_data,
+						input logic [31:0] 	      accum_add_data,
 						input logic [DATA_WIDTH-1:0]  data_0,
 						input logic [DATA_WIDTH-1:0]  data_1, 
 						input logic [DATA_WIDTH-1:0]  data_2,
@@ -152,15 +155,23 @@ module fp_vec_add(
       end
    endgenerate
 
+
+   logic [31:0] muxed_accum_cur_input;
+   logic [31:0] muxed_accum_nxt_data;
+
+   assign muxed_accum_cur_input = (accum_comp_en) ? cur_accum_data : l4_add_data[0];
+   assign muxed_accum_nxt_data = (accum_comp_en) ? accum_add_data : l4_add_data[1] ;
+   
+   
    generate
       for (i = 0; i < 2; i = i+2) begin: fp_add_l5 
 	 fp_arith i_fp_arith(   
 				.clk(clk),
 				.rst_n(rst_n),
-				.data_1(l4_add_data[i]),
-				.data_2(l4_add_data[i+1]),
+				.data_1(muxed_accum_cur_input),
+				.data_2(muxed_accum_nxt_data),
 		 		.op_sel(data_in_op_sel),
-  		 		.en(&l4_data_vld),
+  		 		.en(&l4_data_vld | accum_comp_en),
 				.data_accum_o(final_add_data[i/2]),
 				.data_o_vld(final_data_vld[i/2])
 				);
