@@ -1,3 +1,5 @@
+`include "param.sv"
+
 module svm_top(
 	       input logic 			 clk,
 	       input logic 			 reset_n,
