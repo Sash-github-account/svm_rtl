@@ -23,10 +23,11 @@ parameter RAM_DATA_WIDTH = 8;
 parameter RAM_ADDR_WIDTH = 10;
 parameter INST_SIZE_MOD_ROM_DATA_WIDTH = INST_SIZE%ROM_DATA_WIDTH;
 parameter ADD_ONE = (INST_SIZE_MOD_ROM_DATA_WIDTH > 0) ? 1 : 0;
-parameter NUM_OF_ROM_FIFO_RD_PER_INST = (INST_SIZE/ROM_DATA_WIDTH) + ADD_ONE;
+//parameter NUM_OF_ROM_FIFO_RD_PER_INST = (INST_SIZE/ROM_DATA_WIDTH) + ADD_ONE;
+parameter NUM_OF_ROM_FIFO_RD_PER_INST = 4;
 parameter FIFO_DATA_WIDTH = 32;
 parameter ROM_FIFO_DATA_WIDTH = 8;
-parameter NUM_VLD_ROM_DATA = 20;
+parameter NUM_VLD_ROM_DATA = 124;
 parameter BYTES_PER_BURST = 4;
 parameter SCIACC_RESP_FIFO_DATA_WIDTH = 32;
 parameter ROM_WR_DATA_WD = 8;
@@ -38,24 +39,23 @@ typedef enum logic[NUM_MODE_BITS-1:0]{
 			SIN, //1
 			COS //2 
 			} t_mainop_types;
-/*
 `include "accumulator.sv"
-`include "coeff_rom.sv"
 `include "detect_pos_first_one.sv"
-`include "fifo.sv"
 `include "fp_arith.sv"
 `include "fp_mult.sv"
+`include "fp_mult_array.sv"
+`include "fp_vec_add.sv"
 `include "generic_fifo.sv"
-`include "heart_beat.sv"
-`include "pulse_to_level.sv"
-`include "ram_dma_wr_ctrl.sv"
-`include "ram_wr_dma_top.sv"
+`include "param.sv"
 `include "rom_dma_ctrl.sv"
-`include "rom_dma_sci_acc_intf.sv"
+`include "rom_dma_svm_intf.sv"
 `include "rom_dma_top.sv"
-`include "sci_acc_maclauren_exp_ctrl.sv"
-`include "sci_acc_sce_mclrn_comp_core.sv"
-`include "term_counter.sv"*/
+`include "svm_comp_core.sv"
+`include "svm_core_cfg.sv"
+`include "svm_core_top.sv"
+`include "svm_inference.sv"
+`include "svm_mem_mngr.sv"
+`include "weights_n_data_vec_arr.sv"
 `endif
 
 

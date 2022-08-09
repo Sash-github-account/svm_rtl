@@ -17,11 +17,12 @@ module svm_core_cfg(
 		    output logic [31:0] NUM_DATA_POINTS,
 		    output logic [31:0] DIM_BASE_PTR,
 		    input logic [31:0] 	DIM_BASE_PTR_NUM,
-			 output logic [31:0] INFER_RES_BASE_PTR,
-			 output logic [31:0] INFER_RES_BLK_SIZE,
+		    output logic [31:0] INFER_RES_BASE_PTR,
+		    output logic [31:0] INFER_RES_BLK_SIZE,
+		    output logic [31:0] WEIGTHS_BASE_ADDR,
 		    output logic [31:0] MODE_DATASET_ORG,
 		    input logic 	batch_comp_done,
-		    output logic [31:0] cfg_done
+		    output logic [0:0] cfg_done
 
 		    );
    
@@ -43,7 +44,8 @@ module svm_core_cfg(
    assign  MODE_DATASET_ORG = cfg_regs[10];
 	assign cfg_done = cfg_regs[9][0];
 	assign INFER_RES_BASE_PTR = cfg_regs[12 ];
-	assign INFER_RES_BLK_SIZE = cfg_regs[13 ];
+	assign INFER_RES_BLK_SIZE = cfg_regs[14 ];
+	assign WEIGTHS_BASE_ADDR = cfg_regs[13 ];
 
    
    
@@ -54,22 +56,23 @@ module svm_core_cfg(
 	 end		   
       end
       else begin
-	 cfg_regs[ 0 ] <= 1; //train mode
+	 cfg_regs[ 0 ] <= 2; //train mode
 	 cfg_regs[ 1 ] <= 2; //float
 	 cfg_regs[ 2 ] <= 32'h3e4ccccd; // 0.2 test set
 	 cfg_regs[ 3 ] <= 32'h0; //train/test data base addr
 	 cfg_regs[ 4 ] <= 0; //test data is auto split
 	 cfg_regs[ 5 ] <= 1; // training algo: gradient desc
-	 cfg_regs[ 6 ] <= 2; // num dims
-	 cfg_regs[ 7 ] <= 1024; // no. data points
+        cfg_regs[ 6 ] <= 2; // num dims
+        cfg_regs[ 7 ] <= 12; // no. data points
 	 cfg_regs[ 8 ] <= 2; // entire data point is consecutively arrgnd
 	 cfg_regs[ 9 ] <= 1; // cfg done
 	 cfg_regs[10 ] <= batch_comp_done; // requested comp done
 	 cfg_regs[11 ] <= 0; //cfg error
 	 cfg_regs[12 ] <= 32'h00000200; // infer res base ptr
-	 cfg_regs[13 ] <= 1; // res str stack size
-	 cfg_regs[14 ] <= 0; // Scatter DS base ptr
-
+        cfg_regs[13 ] <= 32'd96; // weights base ptr
+	 cfg_regs[14 ] <= 1; // res str stack size
+	 cfg_regs[15 ] <= 0; // Scatter DS base ptr
+/*
 	 if(cfg_req_vld & (cfg_regs[9] != 1) & cfg_data_rb_w) begin
 	    cfg_regs[cfg_addr] <= cfg_data;	    
 	 end
@@ -81,7 +84,7 @@ module svm_core_cfg(
 	    for(int i = 0; i < DIM_BASE_PTR_MAX_DIM+16; i++) begin
 	       cfg_regs[i] <= cfg_regs[i];		      
 	    end		    
-	 end
+	 end*/
       end
    end
 

@@ -3,10 +3,12 @@ module weights_n_data_vec_arr(
 			      input logic 		    rst_n,
 			      input logic [DATA_WIDTH-1:0]  mem_mngr_data,
 			      input logic 		    mem_mngr_data_vld,
+			      output logic 		    pop_fifo,
 			      input logic [5:0] 	    svm_ctrl_part_num_dim,
 			      input logic 		    loading_weights,
 			      input logic 		    loading_data,
-			      input logic 		    clear_weights_n_data,
+			      input logic 		    clear_weights,
+			      input logic 		    clear_data_vec,
 			      output logic [DATA_WIDTH-1:0] weight_regs_0,
 			      output logic [DATA_WIDTH-1:0] weight_regs_1, 
 			      output logic [DATA_WIDTH-1:0] weight_regs_2,
@@ -75,12 +77,26 @@ module weights_n_data_vec_arr(
 			      output logic 		    data_vec_progd
 			      );
 
+
+   //-------------------------//
+   //--------Declaration------//
+   //-------------------------//
    logic [DATA_WIDTH-1:0] 				    weight_regs[0:31];
    logic [DATA_WIDTH-1:0] 				    data_vec_regs[0:31];
    logic [5:0] 						    weight_addr_cntr;
    logic [5:0] 						    data_vec_addr_cntr;
+  logic [5:0] svm_ctrl_part_num_dim_int_w;
+  logic [5:0] svm_ctrl_part_num_dim_int_d;
+   //------------------------//
+   //------------------------//
+   //------------------------//
+   
 
 
+
+   //------------------------//
+   //----------Regs----------//
+   //------------------------//  
    assign   weight_regs_0 =        weight_regs[ 0 ];  
    assign   weight_regs_1 =        weight_regs[ 1 ];  
    assign   weight_regs_2 =        weight_regs[ 2 ];  
@@ -146,44 +162,159 @@ module weights_n_data_vec_arr(
    assign   data_vec_regs_30 =     data_vec_regs[30 ];
    assign   data_vec_regs_31 =     data_vec_regs[31 ];
 
+  assign weights_progd = (weight_addr_cntr == svm_ctrl_part_num_dim_int_w) & (svm_ctrl_part_num_dim_int_w != 0);
+  assign data_vec_progd = (data_vec_addr_cntr == svm_ctrl_part_num_dim_int_d) & (svm_ctrl_part_num_dim_int_d != 0);
+  assign pop_fifo = mem_mngr_data_vld & (loading_weights | loading_data);
+   //------------------------//
+   //------------------------//
+   //------------------------//
 
-   assign weights_progd = weight_addr_cntr == svm_ctrl_part_num_dim;
-   assign data_vec_progd = data_vec_addr_cntr == svm_ctrl_part_num_dim;
 
-
+   
+   //-------------------------------//
+   //--------Cfg wr/rdctrl----------//
+   //-------------------------------//
+  always@(posedge clk) begin
+    if(!rst_n) begin
+      svm_ctrl_part_num_dim_int_w <= 0;
+    end
+    else begin
+      if((loading_weights) & (svm_ctrl_part_num_dim > 0)) svm_ctrl_part_num_dim_int_w <= svm_ctrl_part_num_dim;
+      else if(clear_weights) svm_ctrl_part_num_dim_int_w <= 0;
+    end
+    
+  end
+ 
+              
+  always@(posedge clk) begin
+    if(!rst_n) begin
+      svm_ctrl_part_num_dim_int_d <= 0;
+    end
+    else begin
+      if((loading_data) & (svm_ctrl_part_num_dim > 0)) svm_ctrl_part_num_dim_int_d <= svm_ctrl_part_num_dim;
+      else if(clear_data_vec) svm_ctrl_part_num_dim_int_d <= 0;
+    end
+    
+  end
+  /*
+  always@(posedge clk) begin
+    if(!rst_n) begin
+      	weight_addr_cntr <= 0;
+	 	data_vec_addr_cntr <= 0;
+    end
+    else begin
+       if(clear_weights_n_data) begin
+          weight_addr_cntr <= 0;
+          data_vec_addr_cntr <= 0;
+		
+       end
+      
+      if(mem_mngr_data_vld & loading_data & !pop_fifo) begin
+      	   if(weight_addr_cntr < svm_ctrl_part_num_dim) begin
+		  		weight_addr_cntr <= weight_addr_cntr  + 1;
+	       end
+	       else begin
+		  		weight_addr_cntr <= weight_addr_cntr;
+	       end
+      end
+      
+      if(mem_mngr_data_vld & loading_data & !pop_fifo) begin
+        if(data_vec_addr_cntr < svm_ctrl_part_num_dim) begin
+          data_vec_addr_cntr <= data_vec_addr_cntr  + 1;
+        end
+        else begin
+          data_vec_addr_cntr <= data_vec_addr_cntr;
+        end
+      end
+      
+    end	
+  end*/
+  
    always@(posedge clk) begin
       if(!rst_n) begin
-	 weight_addr_cntr <= 0;
-	 data_vec_addr_cntr <= 0;
+      	weight_addr_cntr <= 0;
+	 	data_vec_addr_cntr <= 0;
+        
+	 //pop_fifo <= 0;
 	 for (int i = 0; i < 32; i++) begin
 	    weight_regs[i] <= 0;
 	    data_vec_regs[i] <= 32'h3f800000;
 	 end
       end
       else begin
-	 if(clear_weights_n_data) begin
-	    weight_addr_cntr <= 0;
-	    data_vec_addr_cntr <= 0;
-	    for (int i = 0; i < 32; i++) begin
-	       weight_regs[i] <= 0;
-	       data_vec_regs[i] <= 32'h3f800000;
-	    end				
-	 end
 	 
+        if(clear_weights) begin
+          weight_addr_cntr <= 0;
+         
+          for (int i = 0; i < 32; i++) begin
+             weight_regs[i] <= 0;
+          end				
+       end
+       
+       if( clear_data_vec) begin
+          data_vec_addr_cntr <= 0;
+         
+          for (int i = 0; i < 32; i++) begin
+             data_vec_regs[i] <= 32'h3f800000;
+          end				
+       end
+        
+        /*if(mem_mngr_data_vld & loading_weights) begin
+          	weight_regs[weight_addr_cntr] <= mem_mngr_data;
+	       if(weight_addr_cntr < svm_ctrl_part_num_dim) begin
+		  		//weight_addr_cntr <= weight_addr_cntr  + 1;
+		  		pop_fifo <= 1;
+	       end
+	       else begin
+		  		//weight_addr_cntr <= weight_addr_cntr;
+		  		pop_fifo <= 0;
+	       end
+        end
+        
+        if(mem_mngr_data_vld & loading_data) begin
+        	data_vec_regs[data_vec_addr_cntr] <= mem_mngr_data;
+	       	if(data_vec_addr_cntr < svm_ctrl_part_num_dim) begin
+		  		//data_vec_addr_cntr <= data_vec_addr_cntr  + 1;
+		  		pop_fifo <= 1;
+	       	end
+	       	else begin
+		  		//data_vec_addr_cntr <= data_vec_addr_cntr;
+		  		pop_fifo <= 0;
+        	end
+        end*/
+        
 	 if(mem_mngr_data_vld) begin
 	    if(loading_weights) begin
 	       weight_regs[weight_addr_cntr] <= mem_mngr_data;
-	       if(weight_addr_cntr < svm_ctrl_part_num_dim) weight_addr_cntr <= weight_addr_cntr  + 1;
+          if(weight_addr_cntr < svm_ctrl_part_num_dim_int_w) begin
+		  weight_addr_cntr <= weight_addr_cntr  + 1;
+		  //pop_fifo <= 1;
+	       end
+	       else begin
+		  weight_addr_cntr <= weight_addr_cntr;
+		  // <= 0;
+		  
+	       end
 	    end
 
 	    if(loading_data) begin
 	       data_vec_regs[data_vec_addr_cntr] <= mem_mngr_data;
-	       if(data_vec_addr_cntr < svm_ctrl_part_num_dim) data_vec_addr_cntr <= data_vec_addr_cntr  + 1;
+          if(data_vec_addr_cntr < svm_ctrl_part_num_dim_int_d) begin
+		  data_vec_addr_cntr <= data_vec_addr_cntr  + 1;
+		  //pop_fifo <= 1;
+	       end
+	       else begin
+		  data_vec_addr_cntr <= data_vec_addr_cntr;
+		  //pop_fifo <= 0;
+	       end
 	    end
 	 end
       end
    end   
-
+   //------------------------//
+   //------------------------//
+   //------------------------//
    
 
-endmodule
+endmodule // weights_n_data_vec_arr
+
